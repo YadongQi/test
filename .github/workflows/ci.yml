@@ -1,0 +1,50 @@
+name: TEST CI
+on: [push, pull_request]
+
+jobs:
+  builds_default_gcc:
+    name: Build with default GCC
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-16.04]
+    steps:
+      - uses: actions/checkout@v1
+      - name: build(default GCC)
+        run: |
+          gcc --version
+          ld -v
+          export CC=gcc
+          export LD=ld
+          make
+  builds_official_llvm:
+    name: Build with Official LLVM
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04]
+        llvm_version: [8, 9]
+    steps:
+      - uses: actions/checkout@v1
+      - name: setup llvm
+        run: |
+          mkdir -p $PWD/toolchain
+          cd $PWD/toolchain
+          if [ ${{ matrix.llvm_version }} == "default" ]; then
+            export LLVM_VERSION=$(sed -n 's/^LLVM_VERSION=//p' llvm.sh)
+          else
+            export LLVM_VERSION=${{ matrix.llvm_version }}
+          fi
+          wget https://apt.llvm.org/llvm.sh && sudo bash llvm.sh $LLVM_VERSION
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-$LLVM_VERSION 10
+          sudo update-alternatives --set clang /usr/bin/clang-$LLVM_VERSION
+          sudo update-alternatives --install /usr/bin/ld.lld ld.lld /usr/bin/ld.lld-$LLVM_VERSION 10
+          sudo update-alternatives --set ld.lld /usr/bin/ld.lld-$LLVM_VERSION
+          cd -
+      - name: build(Official LLVM)
+        run: |
+          clang -v
+          ld.lld -v
+          export CC=clang
+          export LD=ld.lld
+          make
