@@ -1,0 +1,6 @@
+Name: vm-manager
+Source: http://github.com/YadongQi/test
+
+Files:     *
+Copyright: 2020 Intel Corporation.
+License:   Apache-2.0

@@ -7,16 +7,35 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-16.04]
+        os: [ubuntu-20.04]
     steps:
       - uses: actions/checkout@v1
       - name: build(default GCC)
         run: |
+          sudo apt-get --quiet update --yes
+          sudo apt-get --quiet install --yes make devscripts lintian debhelper
+          sudo apt-get --quiet install --yes autoconf libtool pkg-config
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+          export PATH="${{ env.LOCAL_INSTALL_DIR }}/bin:$PATH"
+          sudo ln -s $(which cmake) /usr/bin/cmake || echo ""
+
           gcc --version
           ld -v
+          date
           export CC=gcc
           export LD=ld
-          make
+          make -f Back_Makefile
+
+          mkdir build
+          cd build
+          cmake ..
+          make -j
+          cd -
+
+          debuild --preserve-env -b -uc -us --lintian-opts --profile debian
+
   builds_official_llvm:
     name: Build with Official LLVM
     runs-on: ${{ matrix.os }}

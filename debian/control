@@ -1,0 +1,18 @@
+Source: test
+Section: admin
+Priority: optional
+Maintainer: Qi, Yadong <yadong.qi@intel.com>
+Build-Depends:
+ debhelper (>=9),
+ gcc,
+Standards-Version: 3.9.8
+Homepage: http://github.com/test
+
+Package: test
+Architecture: any-amd64
+Multi-Arch: foreign
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends}
+Description: test
+  test
